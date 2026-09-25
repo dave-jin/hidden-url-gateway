@@ -15,19 +15,13 @@ export function ClaimContinueButton({
   const copy = copyFor(useLocale(locale));
 
   return (
-    <form action="/api/redeem/continue" method="post" className="mt-8 w-full">
-      <div className="rounded-2xl border border-gold/25 bg-black/45 p-6 text-center">
-        <p className="text-[11px] tracking-[0.28em] text-gold-dim uppercase">{copy.passNote}</p>
-        <p className="mt-3 font-mono text-2xl tracking-[0.18em] text-gold">{pass}</p>
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">{copy.claimBody}</p>
-        <p className="mt-3 text-sm leading-6 text-foreground">{copy.doNotShare}</p>
-        <Button
-          type="submit"
-          className="mt-5 h-12 w-full rounded-xl text-sm tracking-[0.08em]"
-        >
-          {copy.claimButton}
-        </Button>
-      </div>
+    <form action="/api/redeem/continue" method="post" className="mt-8 w-full text-center">
+      <p className="font-mono text-[11px] tracking-[0.16em] text-white/35">{pass}</p>
+      <p className="mt-1 text-[11px] text-white/30">{copy.passNote}</p>
+      <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-muted-foreground">{copy.claimBody}</p>
+      <Button type="submit" className="mt-5 h-12 w-full rounded-xl text-sm">
+        {copy.claimButton}
+      </Button>
     </form>
   );
 }

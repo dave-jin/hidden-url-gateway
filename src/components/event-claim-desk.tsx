@@ -1,14 +1,13 @@
 "use client";
 
 import { ClaimContinueButton } from "@/components/claim-continue-button";
+import { ClaimCountdown } from "@/components/claim-countdown";
 import { EventMark } from "@/components/event-mark";
 import { MakerCredit } from "@/components/maker-credit";
 import { useLocale } from "@/components/use-locale";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   canContinueClaim,
-  formatClaimInstant,
   formatCredit,
   type EventClaimState,
   type EventCodeInfo,
@@ -17,11 +16,11 @@ import type { AppLocale } from "@/lib/locale";
 import { copyFor } from "@/lib/messages";
 import type { PublicEvent } from "@/lib/types";
 
-function stateLine(locale: AppLocale, state: EventClaimState, startsAtMs: number) {
+function stateLine(locale: AppLocale, state: EventClaimState) {
   const copy = copyFor(locale);
   switch (state) {
     case "EVENT_CODE_CLAIM_STATE_UPCOMING":
-      return startsAtMs ? copy.stateUpcoming(formatClaimInstant(startsAtMs)) : copy.stateSoon;
+      return copy.stateSoon;
     case "EVENT_CODE_CLAIM_STATE_OPEN":
       return copy.stateOpen;
     case "EVENT_CODE_CLAIM_STATE_FULL":
@@ -35,14 +34,12 @@ function stateLine(locale: AppLocale, state: EventClaimState, startsAtMs: number
 
 export function EventClaimDesk({
   event,
-  email,
   info,
   error,
   locale,
   pass,
 }: {
   event: PublicEvent;
-  email: string;
   info: EventCodeInfo | null;
   error?: string;
   locale: AppLocale;
@@ -59,19 +56,15 @@ export function EventClaimDesk({
           size="lg"
           variant="wordmark"
         />
-        <Badge className="mt-6 border-gold/20 bg-gold/10 text-gold">{copy.personalPass}</Badge>
         <h1 className="sr-only">{event.name}</h1>
         {info?.found ? (
           <>
-            <p className="mt-5 display text-3xl sm:text-4xl">{info.eventName}</p>
-            <p className="mt-3 text-sm tracking-[0.18em] text-gold uppercase">
-              {stateLine(active, info.claimState, info.claimStartsAtMs)}
-            </p>
+            <p className="mt-8 display text-3xl sm:text-4xl">{info.eventName}</p>
+            <p className="mt-3 text-sm text-gold">{stateLine(active, info.claimState)}</p>
           </>
         ) : (
-          <p className="mt-5 display text-3xl">{copy.eventCredits}</p>
+          <p className="mt-8 display text-3xl">{copy.eventCredits}</p>
         )}
-        <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">{copy.passFor(email)}</p>
       </div>
 
       {error ? (
@@ -113,11 +106,15 @@ export function EventClaimDesk({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-foreground">
-                {formatClaimInstant(info.claimStartsAtMs) || copy.open}
-                {info.claimEndsAtMs ? ` → ${formatClaimInstant(info.claimEndsAtMs)}` : ""}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">{copy.timesKst}</p>
+              <ClaimCountdown
+                state={info.claimState}
+                startsAtMs={info.claimStartsAtMs}
+                endsAtMs={info.claimEndsAtMs}
+                timeLeft={copy.timeLeft}
+                opensIn={copy.opensIn}
+                ended={copy.timerEnded}
+                dayUnit={copy.dayUnit}
+              />
             </CardContent>
           </Card>
         </div>

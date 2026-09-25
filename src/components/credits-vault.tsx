@@ -66,10 +66,10 @@ export function CreditsVault({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-mono text-lg tracking-[0.12em]">{code}</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {copy.claimCodeNote}
-            </p>
+            <p className="font-mono text-xs tracking-[0.14em] text-muted-foreground">{code}</p>
+            {copy.claimCodeNote ? (
+              <p className="mt-2 text-sm text-muted-foreground">{copy.claimCodeNote}</p>
+            ) : null}
           </CardContent>
         </Card>
       </div>

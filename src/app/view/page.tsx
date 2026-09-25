@@ -53,7 +53,6 @@ export default async function ViewPage() {
       {redeemCode ? (
         <EventClaimDesk
           event={publicEvent}
-          email={session.email}
           info={claimInfo}
           error={claimError}
           locale={locale}
