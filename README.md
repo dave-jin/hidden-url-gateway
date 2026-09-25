@@ -1,11 +1,14 @@
 # Hidden URL Gateway
 
-**KO** 이벤트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
+**KO** 이ubca4트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
 
 **EN** An event-branded gateway that shows a destination page only to allowlisted emails. The real URL never leaves the server.
 
 첫 행사는 **Grok Bot Credit Access** 입니다.  
 The first event is **Grok Bot Credit Access**.
+
+Made by **Dave Jin** · **SpaceXAI Community**  
+License: **MIT** — anyone can use, copy, and change this.
 
 ---
 
@@ -32,6 +35,7 @@ cd hidden-url-gateway
 2. 사용자는 게이트 페이지에서 이메일만 입력합니다.
 3. 허용된 이메일이면 서버가 목적지 페이지를 대신 열어 줍니다.
 4. 주소창, 페이지 소스, 네트워크 요청에 실제 URL이 나가지 않습니다.
+5. Next.js 사이트(`innate.kr` 등)는 `/_next` 자산과 `fetch`를 같은 출처 릴레이로 다시 붙입니다.
 
 **EN**
 
@@ -50,7 +54,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**KO** 브라우저에서 `http://localhost:3847` 을 엽니다.  
+**KO** 브라우저에서 `http://localhost:3847` 을 열습니다.  
 **EN** Open `http://localhost:3847` in your browser.
 
 | 경로 / Route | 설명 / Description |
@@ -94,3 +98,12 @@ The admin password is fixed in code to `spacexaikorea`.
 
 `DATABASE_URL`이 없으면 시드된 Grok Bot 행사로 읽기 전용 동작합니다.  
 If `DATABASE_URL` is missing, the app serves the seeded Grok Bot event in read-only mode.
+
+---
+
+## License
+
+**KO** MIT 라이선스입니다. 누구나 복사하고, 고치고, 다시 배포할 수 있습니다.  
+**EN** Released under the MIT License. Anyone may copy, modify, and redistribute it.
+
+See [LICENSE](LICENSE).

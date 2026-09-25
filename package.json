@@ -2,19 +2,20 @@
   "name": "hidden-url-gateway",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev --port 3847",
     "build": "next build",
     "start": "next start --port 3847",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/emails.test.ts"
+    "test": "node --import tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.48.0",
     "next": "16.3.6",
-    "postgres": "^3.4.7",
+    "postgres": "^3.4.9",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
