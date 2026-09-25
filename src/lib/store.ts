@@ -48,11 +48,21 @@ function toEvent(row: EventRow, emails: string[]): EventRecord {
   };
 }
 
-export async function getActiveEvent(): Promise<EventRecord> {
-  if (!hasDatabase()) {
-    return seedEvent;
+async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("database timeout")), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
+}
 
+async function loadActiveEvent(): Promise<EventRecord> {
   const rows = await getDb()<EventRow[]>`
     select id, name, tagline, description, logo_path, wordmark_path,
            destination_kind, destination_url, internal_page, updated_at
@@ -70,6 +80,18 @@ export async function getActiveEvent(): Promise<EventRecord> {
     order by email
   `;
   return toEvent(row, emails.map((item) => item.email));
+}
+
+export async function getActiveEvent(): Promise<EventRecord> {
+  if (!hasDatabase()) {
+    return seedEvent;
+  }
+
+  try {
+    return await withTimeout(loadActiveEvent(), 4000);
+  } catch {
+    return seedEvent;
+  }
 }
 
 export async function updateActiveEvent(

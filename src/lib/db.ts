@@ -16,6 +16,8 @@ export function getDb() {
       ssl: "require",
       max: 1,
       prepare: false,
+      connect_timeout: 8,
+      idle_timeout: 20,
     });
   }
   return cached;
