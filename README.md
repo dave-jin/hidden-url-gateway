@@ -1,6 +1,6 @@
 # Hidden URL Gateway
 
-**KO** 이벤트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
+**KO** 이ubca4트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
 
 **EN** An event-branded gateway that shows a destination page only to allowlisted emails. The real URL never leaves the server.
 
@@ -35,7 +35,7 @@ cd hidden-url-gateway
 2. 사용자는 게이트 페이지에서 이메일만 입력합니다.
 3. 허용된 이메일이면 서버가 목적지 페이지를 대신 열어 줍니다.
 4. 주소창, 페이지 소스, 네트워크 요청에 실제 URL이 나가지 않습니다.
-5. Next.js 사이트(`innate.kr` 등)는 `/_next` 자산과 `fetch`를 같은 출처 릴레이로 다시 붙입니다.
+5. Cursor redeem 링크는 서버가 클레임 정보를 읽어 게이트 안에 그립니다. `innate.kr` 같은 다른 페이지는 hidden iframe으로 릴레이합니다.
 
 **EN**
 
@@ -43,6 +43,7 @@ cd hidden-url-gateway
 2. Visitors only enter their email on the gate page.
 3. If the email is on the list, the server opens the destination page for them.
 4. The real URL is not exposed in the address bar, page source, or network requests.
+5. Cursor redeem links are rendered as an in-gate claim desk. Other sites such as innate.kr are rewritten through the hidden iframe.
 
 ---
 
@@ -54,7 +55,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**KO** 브라우저에서 `http://localhost:3847` 을 엽니다.  
+**KO** 브라우저에서 `http://localhost:3847` 을 엶니다.  
 **EN** Open `http://localhost:3847` in your browser.
 
 | 경로 / Route | 설명 / Description |
