@@ -1,10 +1,20 @@
 export const RELAY_PREFIX = "/api/relay";
 
+export const RSC_REQUEST_HEADERS = [
+  "rsc",
+  "next-router-state-tree",
+  "next-router-prefetch",
+  "next-router-segment-prefetch",
+  "next-url",
+] as const;
+
 const ATTR_RE =
   /(href|src|action|poster|formaction|srcset|imagesrcset|data-src|data-href)=["']([^"']+)["']/gi;
 const CSS_URL_RE = /url\((['"]?)(.*?)\1\)/gi;
 const SRCSET_RE = /srcset=["']([^"']+)["']/gi;
-const INTEGRITY_RE = /\s+integrity=["'][^"']*["']/gi;
+const INTEGRITY_RE = /\s+integrity=["'][^"']+["']/gi;
+const SCRIPT_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
+const STYLE_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
 
 export function resolveAgainst(base: string, value: string) {
   try {
@@ -16,11 +26,16 @@ export function resolveAgainst(base: string, value: string) {
 
 export function originsFor(destinationUrl: string) {
   const destination = new URL(destinationUrl);
-  const origins = new Set([destination.origin]);
+  const hosts = new Set([destination.host]);
   if (destination.hostname.startsWith("www.")) {
-    origins.add(`${destination.protocol}//${destination.hostname.slice(4)}`);
+    hosts.add(destination.host.replace(/^www\./, ""));
   } else {
-    origins.add(`${destination.protocol}//www.${destination.hostname}`);
+    hosts.add(`www.${destination.host}`);
+  }
+  const origins = new Set<string>();
+  for (const host of hosts) {
+    origins.add(`https://${host}`);
+    origins.add(`http://${host}`);
   }
   return origins;
 }
@@ -61,21 +76,166 @@ export function rewriteCss(css: string, destinationUrl: string) {
 }
 
 export function rewriteJs(js: string, destinationUrl: string) {
-  return hideDestination(js, destinationUrl);
+  return rewriteScriptPayload(js, destinationUrl);
 }
 
-function hideDestination(content: string, destinationUrl: string) {
+function prefixNextAssets(content: string) {
+  return content.replace(/(?<!\/api\/relay)\/_next\//g, `${RELAY_PREFIX}/_next/`);
+}
+
+export function hideDestination(content: string, destinationUrl: string) {
   let next = content;
   for (const origin of originsFor(destinationUrl)) {
-    next = next.split(origin).join("");
+    next = next.split(origin).join(RELAY_PREFIX);
   }
-  next = next.replace(/(["'`])\/_next\//g, `$1${RELAY_PREFIX}/_next/`);
-  return next;
+  return prefixNextAssets(next);
+}
+
+function rewriteScriptPayload(content: string, destinationUrl: string) {
+  let next = content;
+  for (const origin of originsFor(destinationUrl)) {
+    next = next.split(`${origin}/_next/`).join(`${RELAY_PREFIX}/_next/`);
+    next = next.split(`${origin}/api/`).join(`${RELAY_PREFIX}/api/`);
+  }
+  return prefixNextAssets(next);
+}
+
+function hideOriginsOutsideScripts(html: string, destinationUrl: string) {
+  const parts = html.split(/(<script\b[^>]*>[\s\S]*?<\/script>)/gi);
+  return parts
+    .map((part) => {
+      if (/^<script\b/i.test(part)) {
+        return rewriteScriptPayload(part, destinationUrl);
+      }
+      return hideDestination(part, destinationUrl);
+    })
+    .join("");
+}
+
+export function visibleTextFromHtml(html: string) {
+  const withoutChrome = html
+    .replace(SCRIPT_RE, "")
+    .replace(STYLE_RE, "")
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, "")
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, "");
+  const body = /<body[\s\S]*$/i.test(withoutChrome)
+    ? withoutChrome.replace(/^[\s\S]*<body[^>]*>/i, "")
+    : withoutChrome;
+  return body
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function htmlLooksPrerendered(html: string) {
+  const text = visibleTextFromHtml(html);
+  if (text.length < 80) return false;
+  if (/^loading\.?/i.test(text) && text.length < 160) return false;
+  return true;
+}
+
+export function relayFrameSrc(destinationUrl: string) {
+  try {
+    const url = new URL(destinationUrl);
+    const path = `${url.pathname}${url.search}` || "/";
+    return path === "/" ? RELAY_PREFIX : path;
+  } catch {
+    return RELAY_PREFIX;
+  }
+}
+
+function relayBootstrap(destinationUrl: string) {
+  const hosts = [
+    ...new Set([...originsFor(destinationUrl)].map((origin) => new URL(origin).hostname)),
+  ];
+  const encodedHosts = Buffer.from(JSON.stringify(hosts)).toString("base64");
+  return `<script data-gateway-bootstrap>
+(function(){
+  var prefix=${JSON.stringify(RELAY_PREFIX)};
+  var hosts=JSON.parse(atob(${JSON.stringify(encodedHosts)}));
+  function mapUrl(value){
+    try {
+      var href = typeof value==="string" ? value : (value && value.url);
+      if (!href) return value;
+      var url = new URL(href, location.href);
+      if (hosts.indexOf(url.hostname) !== -1) {
+        return location.origin + prefix + url.pathname + url.search + url.hash;
+      }
+      if (url.origin !== location.origin) return value;
+      if (url.pathname === prefix || url.pathname.indexOf(prefix + "/") === 0) return value;
+      if (url.pathname === "/view" || url.pathname.indexOf("/admin") === 0) return value;
+      return location.origin + prefix + url.pathname + url.search + url.hash;
+    } catch (e) {}
+    return value;
+  }
+  function copyHeaders(headers){
+    var next = new Headers();
+    if (!headers) return next;
+    if (headers.forEach) {
+      headers.forEach(function(value, key){ next.set(key, value); });
+      return next;
+    }
+    if (Array.isArray(headers)) {
+      headers.forEach(function(pair){ next.set(pair[0], pair[1]); });
+      return next;
+    }
+    Object.keys(headers).forEach(function(key){ next.set(key, headers[key]); });
+    return next;
+  }
+  function detachRsc(input, init){
+    var headers = copyHeaders(init && init.headers);
+    if (typeof Request !== "undefined" && input instanceof Request) {
+      input.headers.forEach(function(value, key){
+        if (!headers.has(key)) headers.set(key, value);
+      });
+    }
+    ["rsc","next-router-state-tree","next-router-prefetch","next-router-segment-prefetch","next-url"].forEach(function(key){
+      var value = headers.get(key);
+      if (value) {
+        headers.set("x-gateway-" + key, value);
+        headers.delete(key);
+      }
+    });
+    return headers;
+  }
+  var origFetch = window.fetch;
+  window.fetch = function(input, init){
+    var url = typeof input === "string" || (typeof URL !== "undefined" && input instanceof URL)
+      ? String(input)
+      : (input && input.url);
+    var mapped = mapUrl(url || input);
+    var headers = detachRsc(input, init);
+    if (typeof Request !== "undefined" && input instanceof Request) {
+      return origFetch.call(this, new Request(mapped, input), { headers: headers });
+    }
+    return origFetch.call(this, mapped, Object.assign({}, init || {}, { headers: headers }));
+  };
+  var origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url) {
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = mapUrl(url);
+    return origOpen.apply(this, args);
+  };
+  function patchSrc(proto, key){
+    var desc = Object.getOwnPropertyDescriptor(proto, key);
+    if (!desc || !desc.set) return;
+    Object.defineProperty(proto, key, {
+      configurable: true,
+      get: desc.get,
+      set: function(value){ desc.set.call(this, mapUrl(value)); }
+    });
+  }
+  patchSrc(HTMLScriptElement.prototype, "src");
+  patchSrc(HTMLLinkElement.prototype, "href");
+  patchSrc(HTMLImageElement.prototype, "src");
+  patchSrc(HTMLSourceElement.prototype, "src");
+  patchSrc(HTMLIFrameElement.prototype, "src");
+  patchSrc(HTMLFormElement.prototype, "action");
+})();
+</script>`;
 }
 
 export function rewriteHtml(html: string, destinationUrl: string) {
-  const destination = new URL(destinationUrl);
-
   let next = html.replace(ATTR_RE, (full, attr: string, value: string) => {
     if (attr === "srcset" || attr === "imagesrcset") {
       const rewritten = value
@@ -112,15 +272,20 @@ export function rewriteHtml(html: string, destinationUrl: string) {
   });
 
   next = next.replace(INTEGRITY_RE, "");
-  next = hideDestination(next, destination.href);
-  next = next.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+  next = hideOriginsOutsideScripts(next, destinationUrl);
   next = next.replace(
     /<meta[^>]+http-equiv=["']content-security-policy["'][^>]*>/gi,
     "",
   );
 
-  if (/<head[^>]*>/i.test(next)) {
-    next = next.replace(/<head([^>]*)>/i, `<head$1><base href="${RELAY_PREFIX}/">`);
+  const prerendered = htmlLooksPrerendered(next);
+  if (prerendered) {
+    next = next.replace(SCRIPT_RE, "");
+    if (/<head[^>]*>/i.test(next)) {
+      next = next.replace(/<head([^>]*)>/i, `<head$1><base href="${RELAY_PREFIX}/">`);
+    }
+  } else if (/<head[^>]*>/i.test(next)) {
+    next = next.replace(/<head([^>]*)>/i, `<head$1>${relayBootstrap(destinationUrl)}`);
   }
 
   return next;
@@ -164,9 +329,17 @@ export function filterResponseHeaders(headers: Headers) {
   return next;
 }
 
+export function rewriteHopHeaders(headers: Headers, destinationUrl: string) {
+  const link = headers.get("link");
+  if (link) {
+    headers.set("link", hideDestination(link, destinationUrl));
+  }
+}
+
 export function normalizeDestinationUrl(raw: string) {
   const value = raw.trim();
   if (!value) return "";
-  if (/^https?:\/\//i.test(value)) return value;
+  if (/^https:\/\//i.test(value)) return value;
+  if (/^http:\/\//i.test(value)) return `https://${value.slice("http://".length)}`;
   return `https://${value}`;
 }
