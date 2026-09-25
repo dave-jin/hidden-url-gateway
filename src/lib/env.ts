@@ -3,14 +3,16 @@ function readSecret(name: string, fallback: string) {
   return value && value.length > 0 ? value : fallback;
 }
 
+export const ADMIN_PASSWORD = "spacexaikorea";
+
 export function getSessionSecret() {
   return readSecret("SESSION_SECRET", "dev-only-session-secret-change-me");
 }
 
 export function getAdminSecret() {
-  return readSecret("ADMIN_SECRET", "spacexai");
+  return ADMIN_PASSWORD;
 }
 
 export function isUsingDevSecrets() {
-  return !process.env.SESSION_SECRET || !process.env.ADMIN_SECRET;
+  return !process.env.SESSION_SECRET;
 }

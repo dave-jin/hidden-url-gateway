@@ -14,15 +14,13 @@ const sizes = {
 
 export function EventMark({ src, name, size = "md" }: EventMarkProps) {
   return (
-    <div
-      className={`overflow-hidden rounded-full border border-gold/25 bg-black/40 shadow-[0_0_40px_oklch(0.72_0.1_85/0.18)] ${sizes[size]}`}
-    >
+    <div className={`flex items-center justify-center ${sizes[size]}`}>
       {/* Event logos are uploaded or bundled locally; next/image remote patterns would leak destinations. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={`${name} mark`}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-contain"
         onError={(event) => {
           event.currentTarget.src = "/events/grok-bot/mark.svg";
         }}

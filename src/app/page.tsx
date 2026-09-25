@@ -38,6 +38,12 @@ export default async function GatePage() {
           The destination never appears in the address bar, the page source, or a
           shareable link.
         </p>
+        <a
+          href="/admin"
+          className="mt-10 text-[10px] tracking-[0.32em] text-white/25 uppercase transition-colors hover:text-gold-dim"
+        >
+          Admin
+        </a>
       </main>
     </VaultShell>
   );

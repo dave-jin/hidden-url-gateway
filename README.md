@@ -60,7 +60,7 @@ npm run dev
 | `/view` | 인증 후 목적지 페이지 / Destination after access is granted |
 
 데모 이메일 / Demo email: `demo@spacexai.com`  
-로컬 어드민 비밀번호 / Local admin password: `spacexai`
+어드민 비밀번호 / Admin password: `spacexaikorea`
 
 ---
 
@@ -86,9 +86,11 @@ RLS가 켜져 있고 `anon` / `authenticated` 권한은 없습니다. 서버는 
 
 | 변수 / Variable | 설명 / Description |
 | --- | --- |
-| `ADMIN_SECRET` | 어드민 비밀번호 / Admin password |
 | `SESSION_SECRET` | 세션 서명 키 / Session signing key |
 | `DATABASE_URL` | dave-lab Postgres URL / Shared dave-lab Postgres URL |
+
+어드민 비밀번호는 코드에 `spacexaikorea` 로 고정되어 있습니다.  
+The admin password is fixed in code to `spacexaikorea`.
 
 `DATABASE_URL`이 없으면 시드된 Grok Bot 행사로 읽기 전용 동작합니다.  
 If `DATABASE_URL` is missing, the app serves the seeded Grok Bot event in read-only mode.

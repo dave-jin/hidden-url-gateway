@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Grok Bot">
-  <rect width="128" height="128" rx="64" fill="#07080A"/>
-  <circle cx="64" cy="64" r="46" fill="#111214" stroke="#D4B46A" stroke-width="1.5"/>
-  <path d="M40 58c6-8 14-12 24-12s18 4 24 12" fill="none" stroke="#D4B46A" stroke-width="1.2" opacity=".7"/>
-  <ellipse cx="50" cy="64" rx="6" ry="4" fill="#E8C97A"/>
-  <ellipse cx="78" cy="64" rx="6" ry="4" fill="#E8C97A"/>
-  <path d="M56 80h16l-8 7z" fill="#D4B46A"/>
+  <defs>
+    <mask id="grok-bot-mark">
+      <circle cx="64" cy="64" r="56" fill="#fff"/>
+      <ellipse cx="50" cy="50" rx="7.2" ry="4.1" fill="#000"/>
+      <ellipse cx="70.5" cy="50" rx="7.2" ry="4.1" fill="#000"/>
+    </mask>
+  </defs>
+  <circle cx="64" cy="64" r="56" fill="#F4F4F4" mask="url(#grok-bot-mark)"/>
 </svg>
