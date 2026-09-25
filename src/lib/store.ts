@@ -48,50 +48,86 @@ function toEvent(row: EventRow, emails: string[]): EventRecord {
   };
 }
 
-async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+async function withTimeout<T extends Promise<unknown> & { cancel?: () => void }>(
+  work: T,
+  ms: number,
+): Promise<Awaited<T>> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    return await Promise.race([
+    return (await Promise.race([
       work,
-      new Promise<T>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("database timeout")), ms);
+      new Promise<Awaited<T>>((_, reject) => {
+        timer = setTimeout(() => {
+          work.cancel?.();
+          reject(new Error("database timeout"));
+        }, ms);
       }),
-    ]);
+    ])) as Awaited<T>;
   } finally {
     if (timer) clearTimeout(timer);
   }
 }
 
 async function loadActiveEvent(): Promise<EventRecord> {
-  const rows = await getDb()<EventRow[]>`
-    select id, name, tagline, description, logo_path, wordmark_path,
-           destination_kind, destination_url, internal_page, updated_at
-    from app_hidden_url_gateway.gateway_events
-    where is_active = true
-    order by updated_at desc
-    limit 1
-  `;
+  const rows = await withTimeout(
+    getDb()<EventRow[]>`
+      select id, name, tagline, description, logo_path, wordmark_path,
+             destination_kind, destination_url, internal_page, updated_at
+      from app_hidden_url_gateway.gateway_events
+      where is_active = true
+      order by updated_at desc
+      limit 1
+    `,
+    8000,
+  );
   const row = rows[0];
   if (!row) return seedEvent;
 
-  const emails = await getDb()<{ email: string }[]>`
-    select email from app_hidden_url_gateway.gateway_event_emails
-    where event_id = ${row.id}
-    order by email
-  `;
+  const emails = await withTimeout(
+    getDb()<{ email: string }[]>`
+      select email from app_hidden_url_gateway.gateway_event_emails
+      where event_id = ${row.id}
+      order by email
+    `,
+    8000,
+  );
   return toEvent(row, emails.map((item) => item.email));
 }
 
-export async function getActiveEvent(): Promise<EventRecord> {
-  if (!hasDatabase()) {
-    return seedEvent;
-  }
+let lastEvent: EventRecord | null = null;
+let refreshInFlight: Promise<EventRecord> | null = null;
 
+async function refreshEvent() {
+  if (!hasDatabase()) {
+    return lastEvent ?? seedEvent;
+  }
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const event = await loadActiveEvent();
+      lastEvent = event;
+      return event;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
+}
+
+export async function getActiveEvent(): Promise<EventRecord> {
+  if (lastEvent) {
+    void refreshEvent().catch(() => undefined);
+    return lastEvent;
+  }
   try {
-    return await withTimeout(loadActiveEvent(), 4000);
+    return await refreshEvent();
   } catch {
     return seedEvent;
   }
+}
+
+if (hasDatabase()) {
+  void refreshEvent().catch(() => undefined);
 }
 
 export async function updateActiveEvent(
@@ -145,7 +181,8 @@ export async function updateActiveEvent(
     }
   }
 
-  return getActiveEvent();
+  lastEvent = next;
+  return next;
 }
 
 export async function saveEventAsset(params: {
