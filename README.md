@@ -12,11 +12,15 @@ The first event is **Grok Bot Credit Access**.
 ## 저장소 / Repository
 
 - GitHub: https://github.com/dave-jin/hidden-url-gateway
+- Vercel: https://hidden-url-gateway.vercel.app
 
 ```bash
 git clone https://github.com/dave-jin/hidden-url-gateway.git
 cd hidden-url-gateway
 ```
+
+**KO** GitHub `main`에 푸시하면 Vercel이 자동 배포합니다.  
+**EN** Pushing to GitHub `main` triggers a Vercel production deploy.
 
 ---
 
