@@ -245,11 +245,13 @@ export function AdminConsole() {
                   type="url"
                   value={destinationUrl}
                   onChange={(event) => setDestinationUrl(event.target.value)}
-                  placeholder="https://…"
+                  placeholder="http://cursor.com/redeem/event/your-event-slug"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Stored only in Supabase. Visitors receive `/api/relay`, never this
-                  address.
+                  Stored only in Supabase. Visitors never see this address.
+                  Cursor redeem links render as a claim desk. Visitors only leave
+                  this site when they choose to sign in on Cursor. Other pages
+                  such as innate.kr stay in the hidden iframe.
                 </p>
               </div>
             ) : (

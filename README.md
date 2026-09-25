@@ -55,7 +55,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**KO** 브라우저에서 `http://localhost:3847` 을 엵니다.  
+**KO** 브라우저에서 `http://localhost:3847` 을 엽니다.  
 **EN** Open `http://localhost:3847` in your browser.
 
 | 경로 / Route | 설명 / Description |
