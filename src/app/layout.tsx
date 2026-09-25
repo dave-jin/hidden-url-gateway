@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`dark ${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className={`${geistSans.className} min-h-full flex flex-col bg-background text-foreground`}>
         {children}
       </body>
     </html>
