@@ -7,8 +7,8 @@ const seedEvent: EventRecord = {
   tagline: "Credit Access",
   description:
     "Invitation-only credit desk for the Grok Bot event. Enter the email we registered for you.",
-  logoPath: "/events/grok-bot/mark.svg",
-  wordmarkPath: "/events/grok-bot/mark.svg",
+  logoPath: "/events/grok-bot/logo.svg",
+  wordmarkPath: "/events/grok-bot/wordmark.svg",
   destinationKind: "internal",
   destinationUrl: "",
   internalPage: "grok-credits",

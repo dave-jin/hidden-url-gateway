@@ -29,7 +29,8 @@ export function AdminConsole() {
   const [destinationKind, setDestinationKind] = useState<DestinationKind>("internal");
   const [destinationUrl, setDestinationUrl] = useState("");
   const [emailsText, setEmailsText] = useState("");
-  const [logoPath, setLogoPath] = useState("/events/grok-bot/mark.svg");
+  const [logoPath, setLogoPath] = useState("/events/grok-bot/logo.svg");
+  const [wordmarkPath, setWordmarkPath] = useState("/events/grok-bot/wordmark.svg");
   const [allowlistCount, setAllowlistCount] = useState(0);
 
   async function load() {
@@ -58,6 +59,7 @@ export function AdminConsole() {
     setDestinationUrl(body.event.destinationUrl);
     setEmailsText(body.event.emails.join("\n"));
     setLogoPath(body.event.logoPath);
+    setWordmarkPath(body.event.wordmarkPath);
     setAllowlistCount(body.meta.allowlistCount);
   }
 
@@ -127,6 +129,7 @@ export function AdminConsole() {
       return;
     }
     setLogoPath(body.event.logoPath);
+    setWordmarkPath(body.event.wordmarkPath);
     setNotice("Event logo updated.");
   }
 
@@ -306,12 +309,14 @@ export function AdminConsole() {
           <CardTitle>Gate preview</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center text-center">
-          <EventMark src={logoPath} name={name || "Event"} size="md" />
+          <EventMark
+            src={wordmarkPath || logoPath}
+            name={name || "Event"}
+            size="md"
+            variant="wordmark"
+          />
           <p className="mt-4 text-[11px] tracking-[0.32em] text-gold-dim uppercase">
             Private desk
-          </p>
-          <p className="display mt-2 text-2xl tracking-[0.14em] uppercase">
-            {name || "Event"}
           </p>
           <p className="mt-1 text-xs tracking-[0.22em] text-gold uppercase">
             {tagline}

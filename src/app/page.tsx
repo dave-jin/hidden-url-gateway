@@ -18,13 +18,16 @@ export default async function GatePage() {
   return (
     <VaultShell>
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-6 py-16">
-        <EventMark src={publicEvent.logoPath} name={publicEvent.name} size="lg" />
+        <EventMark
+          src={publicEvent.wordmarkPath}
+          name={publicEvent.name}
+          size="lg"
+          variant="wordmark"
+        />
         <p className="mt-8 text-[11px] tracking-[0.42em] text-gold-dim uppercase">
           Private desk
         </p>
-        <h1 className="display mt-3 text-center text-5xl font-semibold tracking-[0.18em] text-foreground uppercase">
-          {publicEvent.name}
-        </h1>
+        <h1 className="sr-only">{publicEvent.name}</h1>
         <p className="mt-3 text-center text-sm tracking-[0.32em] text-gold uppercase">
           {publicEvent.tagline}
         </p>

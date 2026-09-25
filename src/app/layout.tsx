@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description:
     "Invitation-only credit desk. The destination URL never leaves the server.",
   robots: { index: false, follow: false },
-  icons: { icon: "/events/grok-bot/mark.svg" },
+  icons: { icon: "/events/grok-bot/logo.svg" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

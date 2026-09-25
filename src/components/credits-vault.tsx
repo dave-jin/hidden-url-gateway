@@ -16,13 +16,16 @@ export function CreditsVault({
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col justify-center px-6 py-12">
       <div className="flex flex-col items-center text-center">
-        <EventMark src={event.logoPath} name={event.name} size="md" />
+        <EventMark
+          src={event.wordmarkPath}
+          name={event.name}
+          size="lg"
+          variant="wordmark"
+        />
         <Badge className="mt-6 border-gold/20 bg-gold/10 text-gold">
           Access confirmed
         </Badge>
-        <h1 className="display mt-4 text-4xl tracking-[0.14em] uppercase">
-          {event.name}
-        </h1>
+        <h1 className="sr-only">{event.name}</h1>
         <p className="mt-2 text-sm tracking-[0.28em] text-gold uppercase">
           {event.tagline}
         </p>
