@@ -1,3 +1,5 @@
+import { normalizeDestinationUrl } from "@/lib/proxy";
+
 export type EventClaimState =
   | "EVENT_CODE_CLAIM_STATE_UPCOMING"
   | "EVENT_CODE_CLAIM_STATE_OPEN"
@@ -25,6 +27,17 @@ const CLAIM_STATES = new Set<EventClaimState>([
   "EVENT_CODE_CLAIM_STATE_CLOSED",
   "EVENT_CODE_CLAIM_STATE_DISABLED",
 ]);
+
+export function canContinueClaim(info: EventCodeInfo | null) {
+  return Boolean(info && info.found && info.claimState === "EVENT_CODE_CLAIM_STATE_OPEN");
+}
+
+export function continueDestinationUrl(destinationUrl: string | null | undefined) {
+  if (!destinationUrl) return null;
+  const normalized = normalizeDestinationUrl(destinationUrl);
+  if (!parseCursorRedeemCode(normalized)) return null;
+  return normalized;
+}
 
 export function parseCursorRedeemCode(destinationUrl: string) {
   try {

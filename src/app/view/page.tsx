@@ -7,10 +7,12 @@ import {
   fetchEventCodeInfo,
   parseCursorRedeemCode,
 } from "@/lib/cursor-redeem";
+import { localeFromAcceptLanguage } from "@/lib/locale";
 import { relayFrameSrc } from "@/lib/proxy";
 import { toPublicEvent } from "@/lib/public-event";
 import { getGateSession } from "@/lib/session";
 import { getActiveEvent } from "@/lib/store";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +29,7 @@ export default async function ViewPage() {
   }
 
   const publicEvent = toPublicEvent(event);
+  const locale = localeFromAcceptLanguage((await headers()).get("accept-language"));
   const redeemCode =
     event.destinationKind === "external" && event.destinationUrl
       ? parseCursorRedeemCode(event.destinationUrl)
@@ -52,6 +55,7 @@ export default async function ViewPage() {
           email={session.email}
           info={claimInfo}
           error={claimError}
+          locale={locale}
         />
       ) : event.destinationKind === "external" && event.destinationUrl ? (
         <RelayFrame src={relayFrameSrc(event.destinationUrl)} />
