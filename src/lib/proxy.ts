@@ -1,7 +1,10 @@
+export const RELAY_PREFIX = "/api/relay";
+
 const ATTR_RE =
-  /(href|src|action|poster|formaction)=["']([^"']+)["']/gi;
+  /(href|src|action|poster|formaction|srcset|imagesrcset|data-src|data-href)=["']([^"']+)["']/gi;
 const CSS_URL_RE = /url\((['"]?)(.*?)\1\)/gi;
 const SRCSET_RE = /srcset=["']([^"']+)["']/gi;
+const INTEGRITY_RE = /\s+integrity=["'][^"']*["']/gi;
 
 export function resolveAgainst(base: string, value: string) {
   try {
@@ -11,42 +14,82 @@ export function resolveAgainst(base: string, value: string) {
   }
 }
 
+export function originsFor(destinationUrl: string) {
+  const destination = new URL(destinationUrl);
+  const origins = new Set([destination.origin]);
+  if (destination.hostname.startsWith("www.")) {
+    origins.add(`${destination.protocol}//${destination.hostname.slice(4)}`);
+  } else {
+    origins.add(`${destination.protocol}//www.${destination.hostname}`);
+  }
+  return origins;
+}
+
 export function toRelayPath(destination: URL, candidate: URL) {
-  if (candidate.origin !== destination.origin) {
+  if (!originsFor(destination.href).has(candidate.origin)) {
     return null;
   }
 
-  const destKey = destination.pathname + destination.search;
-  const candKey = candidate.pathname + candidate.search;
-  if (candKey === destKey || candidate.href === destination.href) {
-    return "/api/relay";
-  }
+  return `${RELAY_PREFIX}${candidate.pathname}${candidate.search}${candidate.hash}`;
+}
 
-  return `/api/relay/sub?p=${encodeURIComponent(candidate.pathname + candidate.search + candidate.hash)}`;
+function rewriteValue(destinationUrl: string, raw: string) {
+  const trimmed = raw.trim();
+  if (
+    !trimmed ||
+    trimmed.startsWith("data:") ||
+    trimmed.startsWith("blob:") ||
+    trimmed.startsWith("mailto:") ||
+    trimmed.startsWith("javascript:") ||
+    trimmed.startsWith("#")
+  ) {
+    return raw;
+  }
+  const resolved = resolveAgainst(destinationUrl, trimmed);
+  if (!resolved) return raw;
+  return toRelayPath(new URL(destinationUrl), resolved) ?? raw;
+}
+
+export function rewriteCss(css: string, destinationUrl: string) {
+  return hideDestination(css, destinationUrl).replace(
+    CSS_URL_RE,
+    (full, quote: string, value: string) => {
+      const rewritten = rewriteValue(destinationUrl, value);
+      return rewritten === value ? full : `url(${quote}${rewritten}${quote})`;
+    },
+  );
+}
+
+export function rewriteJs(js: string, destinationUrl: string) {
+  return hideDestination(js, destinationUrl);
+}
+
+function hideDestination(content: string, destinationUrl: string) {
+  let next = content;
+  for (const origin of originsFor(destinationUrl)) {
+    next = next.split(origin).join("");
+  }
+  next = next.replace(/(["'`])\/_next\//g, `$1${RELAY_PREFIX}/_next/`);
+  return next;
 }
 
 export function rewriteHtml(html: string, destinationUrl: string) {
   const destination = new URL(destinationUrl);
 
-  const rewriteValue = (raw: string) => {
-    const trimmed = raw.trim();
-    if (
-      !trimmed ||
-      trimmed.startsWith("data:") ||
-      trimmed.startsWith("blob:") ||
-      trimmed.startsWith("mailto:") ||
-      trimmed.startsWith("javascript:") ||
-      trimmed.startsWith("#")
-    ) {
-      return raw;
-    }
-    const resolved = resolveAgainst(destinationUrl, trimmed);
-    if (!resolved) return raw;
-    return toRelayPath(destination, resolved) ?? raw;
-  };
-
   let next = html.replace(ATTR_RE, (full, attr: string, value: string) => {
-    const rewritten = rewriteValue(value);
+    if (attr === "srcset" || attr === "imagesrcset") {
+      const rewritten = value
+        .split(",")
+        .map((part) => {
+          const [url, descriptor] = part.trim().split(/\s+/, 2);
+          if (!url) return part;
+          const mapped = rewriteValue(destinationUrl, url);
+          return descriptor ? `${mapped} ${descriptor}` : mapped;
+        })
+        .join(", ");
+      return `${attr}="${rewritten}"`;
+    }
+    const rewritten = rewriteValue(destinationUrl, value);
     return rewritten === value ? full : `${attr}="${rewritten}"`;
   });
 
@@ -56,7 +99,7 @@ export function rewriteHtml(html: string, destinationUrl: string) {
       .map((part) => {
         const [url, descriptor] = part.trim().split(/\s+/, 2);
         if (!url) return part;
-        const mapped = rewriteValue(url);
+        const mapped = rewriteValue(destinationUrl, url);
         return descriptor ? `${mapped} ${descriptor}` : mapped;
       })
       .join(", ");
@@ -64,15 +107,20 @@ export function rewriteHtml(html: string, destinationUrl: string) {
   });
 
   next = next.replace(CSS_URL_RE, (full, quote: string, value: string) => {
-    const rewritten = rewriteValue(value);
+    const rewritten = rewriteValue(destinationUrl, value);
     return rewritten === value ? full : `url(${quote}${rewritten}${quote})`;
   });
 
-  if (!/<base\s/i.test(next)) {
-    next = next.replace(
-      /<head([^>]*)>/i,
-      `<head$1><base href="/api/relay">`,
-    );
+  next = next.replace(INTEGRITY_RE, "");
+  next = hideDestination(next, destination.href);
+  next = next.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+  next = next.replace(
+    /<meta[^>]+http-equiv=["']content-security-policy["'][^>]*>/gi,
+    "",
+  );
+
+  if (/<head[^>]*>/i.test(next)) {
+    next = next.replace(/<head([^>]*)>/i, `<head$1><base href="${RELAY_PREFIX}/">`);
   }
 
   return next;
@@ -81,7 +129,7 @@ export function rewriteHtml(html: string, destinationUrl: string) {
 export function rewriteLocation(location: string, destinationUrl: string) {
   const destination = new URL(destinationUrl);
   const resolved = resolveAgainst(destinationUrl, location);
-  if (!resolved) return "/api/relay";
+  if (!resolved) return `${RELAY_PREFIX}/`;
   return toRelayPath(destination, resolved) ?? "/view";
 }
 
@@ -96,17 +144,29 @@ const HOP_BY_HOP = new Set([
   "upgrade",
   "content-encoding",
   "content-length",
+  "content-security-policy",
+  "content-security-policy-report-only",
+  "x-frame-options",
+  "set-cookie",
+  "report-to",
+  "nel",
 ]);
 
 export function filterResponseHeaders(headers: Headers) {
   const next = new Headers();
   headers.forEach((value, key) => {
     if (HOP_BY_HOP.has(key.toLowerCase())) return;
-    if (key.toLowerCase() === "set-cookie") return;
     if (key.toLowerCase() === "location") return;
     next.set(key, value);
   });
   next.set("referrer-policy", "no-referrer");
   next.set("x-frame-options", "SAMEORIGIN");
   return next;
+}
+
+export function normalizeDestinationUrl(raw: string) {
+  const value = raw.trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
 }

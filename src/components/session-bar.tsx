@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { EventMark } from "@/components/event-mark";
+import { MakerCredit } from "@/components/maker-credit";
 import { Button } from "@/components/ui/button";
 import type { PublicEvent } from "@/lib/types";
 
@@ -32,7 +33,10 @@ export function SessionBar({
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <p className="hidden text-xs text-muted-foreground sm:block">{email}</p>
+        <div className="hidden sm:block">
+          <MakerCredit compact />
+        </div>
+        <p className="hidden text-xs text-muted-foreground md:block">{email}</p>
         <Button variant="outline" onClick={leave}>
           Leave
         </Button>

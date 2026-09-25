@@ -1,5 +1,6 @@
 import { GateForm } from "@/components/gate-form";
 import { EventMark } from "@/components/event-mark";
+import { MakerCredit } from "@/components/maker-credit";
 import { VaultShell } from "@/components/vault-shell";
 import { toPublicEvent } from "@/lib/public-event";
 import { getGateSession } from "@/lib/session";
@@ -41,9 +42,12 @@ export default async function GatePage() {
           The destination never appears in the address bar, the page source, or a
           shareable link.
         </p>
+        <div className="mt-12">
+          <MakerCredit />
+        </div>
         <a
           href="/admin"
-          className="mt-10 text-[10px] tracking-[0.32em] text-white/25 uppercase transition-colors hover:text-gold-dim"
+          className="mt-8 text-[10px] tracking-[0.32em] text-white/25 uppercase transition-colors hover:text-gold-dim"
         >
           Admin
         </a>
