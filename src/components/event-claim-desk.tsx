@@ -1,13 +1,17 @@
+import { ClaimContinueButton } from "@/components/claim-continue-button";
 import { EventMark } from "@/components/event-mark";
 import { MakerCredit } from "@/components/maker-credit";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  canContinueClaim,
   claimStateLabel,
   formatClaimInstant,
   formatCredit,
   type EventCodeInfo,
 } from "@/lib/cursor-redeem";
+import type { AppLocale } from "@/lib/locale";
+import { claimContinueCopy } from "@/lib/locale";
 import type { PublicEvent } from "@/lib/types";
 
 export function EventClaimDesk({
@@ -15,12 +19,15 @@ export function EventClaimDesk({
   email,
   info,
   error,
+  locale,
 }: {
   event: PublicEvent;
   email: string;
   info: EventCodeInfo | null;
   error?: string;
+  locale: AppLocale;
 }) {
+  const copy = claimContinueCopy(locale);
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col justify-center px-6 py-12">
       <div className="flex flex-col items-center text-center">
@@ -45,8 +52,7 @@ export function EventClaimDesk({
           <p className="mt-5 display text-3xl">Event credits</p>
         )}
         <p className="mt-4 max-w-md text-sm text-muted-foreground">
-          Bound to {email}. The redeem page is opened on this desk so the
-          destination address never appears in the browser.
+          {copy.bound(email)}
         </p>
       </div>
 
@@ -104,12 +110,19 @@ export function EventClaimDesk({
                   : ""}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Times are shown in Korea Standard Time. The public redeem URL
-                stays on the server.
+                Times are shown in Korea Standard Time.
               </p>
             </CardContent>
           </Card>
         </div>
+      ) : null}
+
+      {canContinueClaim(info) ? (
+        <div className="flex justify-center">
+          <ClaimContinueButton locale={locale} />
+        </div>
+      ) : info?.found ? (
+        <p className="mt-10 text-center text-sm text-muted-foreground">{copy.closed}</p>
       ) : null}
 
       <div className="mt-12">

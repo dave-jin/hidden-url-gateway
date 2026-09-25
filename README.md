@@ -35,7 +35,7 @@ cd hidden-url-gateway
 2. 사용자는 게이트 페이지에서 이메일만 입력합니다.
 3. 허용된 이메일이면 서버가 목적지 페이지를 대신 열어 줍니다.
 4. 주소창, 페이지 소스, 네트워크 요청에 실제 URL이 나가지 않습니다.
-5. Cursor redeem 링크는 서버가 클레임 정보를 읽어 게이트 안에 그립니다. `innate.kr` 같은 다른 페이지는 hidden iframe으로 릴레이합니다.
+5. Cursor redeem 링크는 서버가 클레임 정보를 읽어 게이트 안에 그립니다. 받기 버튼을 누르기 전까지 `cursor.com` 주소는 HTML/JS에 없습니다. 버튼을 누르면 서버가 303으로 Cursor 로그인 화면으로 보냅니다. `innate.kr` 같은 다른 페이지는 hidden iframe으로 릴레이합니다.
 
 **EN**
 
@@ -43,7 +43,7 @@ cd hidden-url-gateway
 2. Visitors only enter their email on the gate page.
 3. If the email is on the list, the server opens the destination page for them.
 4. The real URL is not exposed in the address bar, page source, or network requests.
-5. Cursor redeem links are rendered as an in-gate claim desk. Other sites such as innate.kr are rewritten through the hidden iframe.
+5. Cursor redeem links are rendered as an in-gate claim desk. The `cursor.com` address is not in the page until the visitor continues. That click is a server 303 to Cursor sign-in. Other sites such as innate.kr stay in the hidden iframe.
 
 ---
 
@@ -55,7 +55,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**KO** 브라우저에서 `http://localhost:3847` 을 엽니다.  
+**KO** 브라우저에서 `http://localhost:3847` 을 엵니다.  
 **EN** Open `http://localhost:3847` in your browser.
 
 | 경로 / Route | 설명 / Description |
