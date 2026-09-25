@@ -1,6 +1,6 @@
 # Hidden URL Gateway
 
-**KO** 이ubca4트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
+**KO** 이벤트마다 로고를 바꿔 걸고, 허용된 이메일만 목적지 페이지를 보게 하는 게이트웨이입니다. 실제 URL은 브라우저에 내려주지 않습니다.
 
 **EN** An event-branded gateway that shows a destination page only to allowlisted emails. The real URL never leaves the server.
 
@@ -55,7 +55,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-**KO** 브라우저에서 `http://localhost:3847` 을 엶니다.  
+**KO** 브라우저에서 `http://localhost:3847` 을 엽니다.  
 **EN** Open `http://localhost:3847` in your browser.
 
 | 경로 / Route | 설명 / Description |
