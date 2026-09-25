@@ -14,10 +14,11 @@ export function getDb() {
   if (!cached) {
     cached = postgres(url, {
       ssl: "require",
-      max: 1,
+      max: 3,
       prepare: false,
       connect_timeout: 8,
       idle_timeout: 20,
+      max_lifetime: 60 * 5,
     });
   }
   return cached;
