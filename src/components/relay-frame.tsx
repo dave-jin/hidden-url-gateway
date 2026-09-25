@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { RELAY_PREFIX } from "@/lib/proxy";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function RelayFrame() {
+export function RelayFrame({ src = RELAY_PREFIX }: { src?: string }) {
   const [ready, setReady] = useState(false);
 
   return (
@@ -18,11 +19,11 @@ export function RelayFrame() {
       ) : null}
       <iframe
         title="Secured destination"
-        src="/api/relay"
+        src={src}
         className="h-full w-full border-0 bg-white"
         onLoad={() => setReady(true)}
-        referrerPolicy="no-referrer"
-        sandbox="allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+        referrerPolicy="same-origin"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals"
       />
     </div>
   );
