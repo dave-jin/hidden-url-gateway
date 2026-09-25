@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono, Syne } from "next/font/google";
+import { OncePerEmailBanner } from "@/components/once-per-email-banner";
+import { localeFromAcceptLanguage } from "@/lib/locale";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,13 +29,17 @@ export const metadata: Metadata = {
   icons: { icon: "/events/grok-bot/logo.svg" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const headerList = await headers();
+  const locale = localeFromAcceptLanguage(headerList.get("accept-language"));
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`dark ${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
     >
       <body className={`${geistSans.className} min-h-full flex flex-col bg-background text-foreground`}>
+        <OncePerEmailBanner locale={locale} />
         {children}
       </body>
     </html>
