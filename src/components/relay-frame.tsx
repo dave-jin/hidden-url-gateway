@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { RELAY_PREFIX } from "@/lib/proxy";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocale } from "@/components/use-locale";
+import { copyFor } from "@/lib/messages";
 
 export function RelayFrame({ src = RELAY_PREFIX }: { src?: string }) {
+  const opening = copyFor(useLocale("en")).opening;
   const [ready, setReady] = useState(false);
 
   return (
@@ -13,7 +16,7 @@ export function RelayFrame({ src = RELAY_PREFIX }: { src?: string }) {
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <Skeleton className="h-24 w-64 rounded-xl" />
           <p className="text-[11px] tracking-[0.28em] text-gold-dim uppercase">
-            Opening hidden page
+            {opening}
           </p>
         </div>
       ) : null}

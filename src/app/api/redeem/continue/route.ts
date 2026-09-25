@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { claimCodeFor } from "@/lib/claim-code";
 import { continueDestinationUrl } from "@/lib/cursor-redeem";
 import { getGateSession } from "@/lib/session";
 import { getActiveEvent } from "@/lib/store";
@@ -21,7 +22,10 @@ async function continueToCursor(request: Request) {
     return NextResponse.redirect(new URL("/view", request.url));
   }
 
-  const response = NextResponse.redirect(destination, 303);
+  const pass = claimCodeFor(session.email, event.id);
+  const personal = new URL(destination);
+  personal.hash = `pass=${pass}`;
+  const response = NextResponse.redirect(personal.toString(), 303);
   response.headers.set("referrer-policy", "no-referrer");
   return response;
 }

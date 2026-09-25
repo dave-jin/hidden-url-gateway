@@ -7,6 +7,7 @@ import {
   fetchEventCodeInfo,
   parseCursorRedeemCode,
 } from "@/lib/cursor-redeem";
+import { claimCodeFor } from "@/lib/claim-code";
 import { localeFromAcceptLanguage } from "@/lib/locale";
 import { relayFrameSrc } from "@/lib/proxy";
 import { toPublicEvent } from "@/lib/public-event";
@@ -48,7 +49,7 @@ export default async function ViewPage() {
 
   return (
     <VaultShell>
-      <SessionBar event={publicEvent} email={session.email} />
+      <SessionBar event={publicEvent} email={session.email} locale={locale} />
       {redeemCode ? (
         <EventClaimDesk
           event={publicEvent}
@@ -56,11 +57,17 @@ export default async function ViewPage() {
           info={claimInfo}
           error={claimError}
           locale={locale}
+          pass={claimCodeFor(session.email, event.id)}
         />
       ) : event.destinationKind === "external" && event.destinationUrl ? (
         <RelayFrame src={relayFrameSrc(event.destinationUrl)} />
       ) : (
-        <CreditsVault event={publicEvent} email={session.email} />
+        <CreditsVault
+          event={publicEvent}
+          email={session.email}
+          locale={locale}
+          pass={claimCodeFor(session.email, event.id)}
+        />
       )}
     </VaultShell>
   );

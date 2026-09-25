@@ -1,17 +1,28 @@
+"use client";
+
 import { EventMark } from "@/components/event-mark";
+import { MakerCredit } from "@/components/maker-credit";
+import { useLocale } from "@/components/use-locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { claimCodeFor } from "@/lib/claim-code";
+import type { AppLocale } from "@/lib/locale";
+import { copyFor } from "@/lib/messages";
 import type { PublicEvent } from "@/lib/types";
 
 export function CreditsVault({
   event,
   email,
+  locale = "en",
+  pass,
 }: {
   event: PublicEvent;
   email: string;
+  locale?: AppLocale;
+  pass: string;
 }) {
-  const code = claimCodeFor(email);
+  const active = useLocale(locale);
+  const copy = copyFor(active);
+  const code = pass;
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col justify-center px-6 py-12">
@@ -23,15 +34,14 @@ export function CreditsVault({
           variant="wordmark"
         />
         <Badge className="mt-6 border-gold/20 bg-gold/10 text-gold">
-          Access confirmed
+          {copy.accessConfirmed}
         </Badge>
         <h1 className="sr-only">{event.name}</h1>
         <p className="mt-2 text-sm tracking-[0.28em] text-gold uppercase">
           {event.tagline}
         </p>
         <p className="mt-4 max-w-md text-sm text-muted-foreground">
-          This desk is bound to {email}. The credit page lives inside this
-          session. There is no public URL to copy.
+          {copy.vaultBound(email)}
         </p>
       </div>
 
@@ -39,29 +49,32 @@ export function CreditsVault({
         <Card className="border-gold/15 bg-black/35">
           <CardHeader>
             <CardTitle className="text-sm tracking-[0.16em] text-gold-dim uppercase">
-              Allocation
+              {copy.allocation}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="display text-3xl">$50</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Event credit for Grok Bot inference during the session window.
+              {copy.allocationBody}
             </p>
           </CardContent>
         </Card>
         <Card className="border-gold/15 bg-black/35">
           <CardHeader>
             <CardTitle className="text-sm tracking-[0.16em] text-gold-dim uppercase">
-              Claim code
+              {copy.claimCode}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="font-mono text-lg tracking-[0.12em]">{code}</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Generated for this invited email. It is not a destination link.
+              {copy.claimCodeNote}
             </p>
           </CardContent>
         </Card>
+      </div>
+      <div className="mt-12">
+        <MakerCredit locale={active} />
       </div>
     </div>
   );

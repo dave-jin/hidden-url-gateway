@@ -1,4 +1,17 @@
-export function MakerCredit({ compact = false }: { compact?: boolean }) {
+"use client";
+
+import type { AppLocale } from "@/lib/locale";
+import { copyFor } from "@/lib/messages";
+import { useLocale } from "@/components/use-locale";
+
+export function MakerCredit({
+  compact = false,
+  locale = "en",
+}: {
+  compact?: boolean;
+  locale?: AppLocale;
+}) {
+  const line = copyFor(useLocale(locale)).madeBy;
   return (
     <div
       className={
@@ -25,7 +38,7 @@ export function MakerCredit({ compact = false }: { compact?: boolean }) {
             : "text-[10px] tracking-[0.22em] text-white/40 uppercase"
         }
       >
-        Made by Dave Jin · SpaceXAI Community
+        {line}
       </p>
     </div>
   );

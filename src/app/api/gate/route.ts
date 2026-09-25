@@ -7,10 +7,7 @@ import { getActiveEvent } from "@/lib/store";
 export async function POST(request: Request) {
   const limited = rateLimit(`gate:${clientKey(request.headers)}`, 8, 10 * 60 * 1000);
   if (!limited.ok) {
-    return NextResponse.json(
-      { error: "Too many attempts. Wait a few minutes and try again." },
-      { status: 429 },
-    );
+    return NextResponse.json({ code: "rate_limited" }, { status: 429 });
   }
 
   let email = "";
@@ -18,19 +15,16 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { email?: string };
     email = normalizeEmail(body.email ?? "");
   } catch {
-    return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
+    return NextResponse.json({ code: "invalid_email" }, { status: 400 });
   }
 
   if (!isValidEmail(email)) {
-    return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
+    return NextResponse.json({ code: "invalid_email" }, { status: 400 });
   }
 
   const event = await getActiveEvent();
   if (!isAllowlisted(email, event.emails)) {
-    return NextResponse.json(
-      { error: "That email is not on the invited list." },
-      { status: 403 },
-    );
+    return NextResponse.json({ code: "not_invited" }, { status: 403 });
   }
 
   await createGateSession(email, event.id);
