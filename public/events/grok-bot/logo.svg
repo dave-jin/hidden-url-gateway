@@ -1,3 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
-  <path fill="white" fill-rule="evenodd" d="M8,80a72,72 0 1 0 144,0a72,72 0 1 0 -144,0 M89.145,58.126 A5.500,5.500 -24.000 0 1 99.194,53.652 L102.855,61.874 A5.500,5.500 -24.000 0 1 92.806,66.348 Z M107.145,70.126 A5.500,5.500 -24.000 0 1 117.194,65.652 L120.855,73.874 A5.500,5.500 -24.000 0 1 110.806,78.348 Z"/>
+  <circle cx="80" cy="80" r="72" fill="white"/>
+  <g fill="#050505" transform="rotate(-24 96 60)">
+    <rect x="90.5" y="50" width="11" height="20" rx="5.5"/>
+  </g>
+  <g fill="#050505" transform="rotate(-24 116 72)">
+    <rect x="110.5" y="62" width="11" height="20" rx="5.5"/>
+  </g>
 </svg>
